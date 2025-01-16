@@ -20,22 +20,23 @@ def get_context_page(instance, stealth_js_path):
     return context, page
 
 
-# 如下更改为 stealth.min.js 文件路径地址
-stealth_js_path = "/Users/reajason/ReaJason/xhs/tests/stealth.min.js"
-print("正在启动 playwright")
+stealth_js_path = "/home/tom/PRJ/xhs/stealth.min.js"
+print("playwright is starting")
 playwright = sync_playwright().start()
 browser_context, context_page = get_context_page(playwright, stealth_js_path)
 context_page.goto("https://www.xiaohongshu.com")
-print("正在跳转至小红书首页")
+print("Migrating to the home page of Xiaohongshu")
 time.sleep(5)
 context_page.reload()
 time.sleep(1)
 cookies = browser_context.cookies()
+
 for cookie in cookies:
     if cookie["name"] == "a1":
         A1 = cookie["value"]
-        print("当前浏览器 cookie 中 a1 值为：" + cookie["value"] + "，请将需要使用的 a1 设置成一样方可签名成功")
-print("跳转小红书首页成功，等待调用")
+        print("Current browser cookie a1 value: " + cookie["value"] + ",Please set the a1 to be used to sign successfully")
+print("Successfully migrated to the home page of Xiaohongshu, waiting for call")
+
 
 
 def sign(uri, data, a1, web_session):

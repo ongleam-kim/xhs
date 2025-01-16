@@ -8,11 +8,11 @@ from playwright.sync_api import sync_playwright
 from xhs import XhsClient
 
 
-def sign(uri, data=None, a1="", web_session=""):
+def sign(uri, data=None, a1="1946a055a94w7beo1w6gxqw7pb3yzzza78rznzwv640000241294", web_session=""):
     for _ in range(10):
         try:
             with sync_playwright() as playwright:
-                stealth_js_path = "/Users/reajason/ReaJason/xhs/tests/stealth.min.js"
+                stealth_js_path = "/home/tom/PRJ/xhs/stealth.min.js"
                 chromium = playwright.chromium
 
                 # 如果一直失败可尝试设置成 False 让其打开浏览器，适当添加 sleep 可查看浏览器状态
@@ -33,7 +33,8 @@ def sign(uri, data=None, a1="", web_session=""):
                     "x-s": encrypt_params["X-s"],
                     "x-t": str(encrypt_params["X-t"])
                 }
-        except Exception:
+        except Exception as e:
+            print(f"exception: {e}")
             # 这儿有时会出现 window._webmsxyw is not a function 或未知跳转错误，因此加一个失败重试趴
             pass
     raise Exception("重试了这么多次还是无法签名成功，寄寄寄")
@@ -42,6 +43,8 @@ def sign(uri, data=None, a1="", web_session=""):
 # pip install qrcode
 if __name__ == '__main__':
     xhs_client = XhsClient(sign=sign)
+    
+    
     print(datetime.datetime.now())
     qr_res = xhs_client.get_qrcode()
     qr_id = qr_res["qr_id"]
@@ -53,7 +56,8 @@ if __name__ == '__main__':
     qr.add_data(qr_res["url"])
     qr.make()
     qr.print_ascii()
-
+    
+    print(f"cookie: {xhs_client.cookie}")
     while True:
         check_qrcode = xhs_client.check_qrcode(qr_id, qr_code)
         print(check_qrcode)
