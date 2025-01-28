@@ -8,15 +8,15 @@ from playwright.sync_api import sync_playwright
 from xhs import XhsClient
 
 
-def sign(uri, data=None, a1="1946a055a94w7beo1w6gxqw7pb3yzzza78rznzwv640000241294", web_session=""):
+def sign(uri, data=None, a1="1946e73668ck85hitv4svxpesy0p93a4bo55tgddn30000679089", web_session=""):
     for _ in range(10):
         try:
             with sync_playwright() as playwright:
-                stealth_js_path = "/home/tom/PRJ/xhs/stealth.min.js"
+                stealth_js_path = "/Users/tom/PRJ/xhs/stealth.min.js"
                 chromium = playwright.chromium
 
                 # 如果一直失败可尝试设置成 False 让其打开浏览器，适当添加 sleep 可查看浏览器状态
-                browser = chromium.launch(headless=True)
+                browser = chromium.launch(headless=False)
 
                 browser_context = browser.new_context()
                 browser_context.add_init_script(path=stealth_js_path)
@@ -47,24 +47,25 @@ if __name__ == '__main__':
     
     print(datetime.datetime.now())
     qr_res = xhs_client.get_qrcode()
-    qr_id = qr_res["qr_id"]
-    qr_code = qr_res["code"]
-
-    qr = qrcode.QRCode(version=1, error_correction=qrcode.ERROR_CORRECT_L,
-                       box_size=50,
-                       border=1)
-    qr.add_data(qr_res["url"])
-    qr.make()
-    qr.print_ascii()
     
-    print(f"cookie: {xhs_client.cookie}")
-    while True:
-        check_qrcode = xhs_client.check_qrcode(qr_id, qr_code)
-        print(check_qrcode)
-        sleep(1)
-        if check_qrcode["code_status"] == 2:
-            print(json.dumps(check_qrcode["login_info"], indent=4))
-            print("当前 cookie：" + xhs_client.cookie)
-            break
+    # qr_id = qr_res["qr_id"]
+    # qr_code = qr_res["code"]
 
-    print(json.dumps(xhs_client.get_self_info(), indent=4))
+    # qr = qrcode.QRCode(version=1, error_correction=qrcode.ERROR_CORRECT_L,
+    #                    box_size=50,
+    #                    border=1)
+    # qr.add_data(qr_res["url"])
+    # qr.make()
+    # qr.print_ascii()
+    
+    # print(f"cookie: {xhs_client.cookie}")
+    # while True:
+    #     check_qrcode = xhs_client.check_qrcode(qr_id, qr_code)
+    #     print(check_qrcode)
+    #     sleep(1)
+    #     if check_qrcode["code_status"] == 2:
+    #         print(json.dumps(check_qrcode["login_info"], indent=4))
+    #         print("当前 cookie：" + xhs_client.cookie)
+    #         break
+
+    # print(json.dumps(xhs_client.get_self_info(), indent=4))

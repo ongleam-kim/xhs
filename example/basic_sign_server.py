@@ -13,20 +13,20 @@ A1 = ""
 
 def get_context_page(instance, stealth_js_path):
     chromium = instance.chromium
-    browser = chromium.launch(headless=True)
+    browser = chromium.launch(headless=False)
     context = browser.new_context()
     context.add_init_script(path=stealth_js_path)
     page = context.new_page()
     return context, page
 
 
-stealth_js_path = "/home/tom/PRJ/xhs/stealth.min.js"
+stealth_js_path = "/Users/tom/PRJ/xhs/stealth.min.js"
 print("playwright is starting")
 playwright = sync_playwright().start()
 browser_context, context_page = get_context_page(playwright, stealth_js_path)
 context_page.goto("https://www.xiaohongshu.com")
 print("Migrating to the home page of Xiaohongshu")
-time.sleep(5)
+time.sleep(10)
 context_page.reload()
 time.sleep(1)
 cookies = browser_context.cookies()

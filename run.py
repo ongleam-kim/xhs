@@ -13,10 +13,11 @@ from xhs import DataFetchError, XhsClient, help
 
 
 RETRY_CNT = 10
-STEALTH_JS_PATH = "/home/tom/PRJ/xhs/stealth.min.js"
-COOKIE = "xsecappid=xhs-pc-web; a1=193a5e6cf36as87iqr2ken1f6we3p7gfwikiihgix30000293430; webId=616fc8b666578593f7c321280737e423; gid=yjq02dKdSdEiyjq02dKSi3xkqK0MYW3AFJTdT3CIyiKEd3q8qUWki3888Jjq4q88fqDYiKdi; x-user-id-pgy.xiaohongshu.com=5a3095d7e8ac2b441e001612; customerClientId=979703179568260; abRequestId=616fc8b666578593f7c321280737e423; websectiga=2845367ec3848418062e761c09db7caf0e8b79d132ccdd1a4f8e64a11d0cac0d; webBuild=4.55.0; unread={%22ub%22:%226787b3ca0000000018034177%22%2C%22ue%22:%22677abd33000000000b00d55e%22%2C%22uc%22:25}; sec_poison_id=44197683-7514-4ea1-92d9-cabab71eda55; acw_tc=0a4adda817369957989031610ef1de207826bdc27ae31bafd7b2bb5bbf1c86; web_session=040069b64b725923c263523ebd354b032e8162"
+STEALTH_JS_PATH = "./stealth.min.js"
+COOKIE = "abRequestId=c94168d3-aaca-5a38-9f0b-6d24064ec1af; a1=1948c94bbb9o2mwh8o7hruumqbfb3ps27g9tf8as630000233724; webId=8842f4bbadcc13b9bc6a1ac8b894d7a7; gid=yj4YSj4S08WWyj4YSj4DDkY0DjlJ6ExYlWxFjMK776ADi9q8DqUMJi888JqqWJ48DfSYJ8Ji; x-user-id-creator.xiaohongshu.com=673f3111000000001c019235; customer-sso-sid=68c5174626591620805888178fdaecfa15ef2f89; customerClientId=438249330604083; access-token-creator.xiaohongshu.com=customer.creator.AT-68c517462659162080523141uj8ilf5cp578vxnq; galaxy_creator_session_id=bNvRDPa1EDqlvwpeje8s0pMJf5IFNtt6zN2p; galaxy.creator.beaker.session.id=1737535736629046685042; xsecappid=xhs-pc-web; webBuild=4.55.1; acw_tc=0a4a134d17378590483785785e1e60ab93e7b8f39df3f132e01984b14f5c25; websectiga=f47eda31ec99545da40c2f731f0630efd2b0959e1dd10d5fedac3dce0bd1e04d; sec_poison_id=8bfa3415-de4f-4ff2-a3bc-c6725e86f8b9; web_session=040069b64b725923c26347e8a0354b086f540b"
 INPUT_FILE_DIR = "input"
 OUTPUT_FILE_DIR = "output"
+HEADELESS = True
 
 
 def sign(uri, data=None, a1="", web_session=""):
@@ -26,7 +27,7 @@ def sign(uri, data=None, a1="", web_session=""):
                 chromium = playwright.chromium
 
                 # 如果一直失败可尝试设置成 False 让其打开浏览器，适当添加 sleep 可查看浏览器状态
-                browser = chromium.launch(headless=True)
+                browser = chromium.launch(headless=HEADELESS)
 
                 browser_context = browser.new_context()
                 browser_context.add_init_script(path=STEALTH_JS_PATH)
@@ -125,7 +126,7 @@ if __name__ == "__main__":
         if not category_dir.is_dir():
             continue
 
-        # if category_dir.name != "richard":
+        # if category_dir.name == "장군닭갈비":
         #     continue
 
         print(f"\n##### [ {category_dir.name} ] 시작 ######")
