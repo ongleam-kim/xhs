@@ -18,10 +18,10 @@ pattern = r"https://www\.xiaohongshu\.com/(?:explore|discovery/item)/([a-zA-Z0-9
 
 NOTION_DB_ID = "16d4f3ea5efb81bd97a7c599d2cff8d4"
 NOTION_API_KEY = "secret_rfAdLYHfhpgHc2yEstyPeQT4i97R9UkA78NQh1g7B2C"
-COOKIE = "abRequestId=c94168d3-aaca-5a38-9f0b-6d24064ec1af; a1=1948c94bbb9o2mwh8o7hruumqbfb3ps27g9tf8as630000233724; webId=8842f4bbadcc13b9bc6a1ac8b894d7a7; gid=yj4YSj4S08WWyj4YSj4DDkY0DjlJ6ExYlWxFjMK776ADi9q8DqUMJi888JqqWJ48DfSYJ8Ji; x-user-id-creator.xiaohongshu.com=673f3111000000001c019235; customerClientId=438249330604083; access-token-creator.xiaohongshu.com=customer.creator.AT-68c517462659162080523141uj8ilf5cp578vxnq; galaxy_creator_session_id=bNvRDPa1EDqlvwpeje8s0pMJf5IFNtt6zN2p; galaxy.creator.beaker.session.id=1737535736629046685042; xsecappid=xhs-pc-web; webBuild=4.56.0; acw_tc=0a0bb33017396068461498139e51081faa65f9804cc3d9f5cd8f623bcc98a3; websectiga=cf46039d1971c7b9a650d87269f31ac8fe3bf71d61ebf9d9a0a87efb414b816c; sec_poison_id=d2477159-efd9-4a75-a9bf-ce36d3a9b38f; web_session=040069b64b725923c263ec0385354bee93fc7c"
+COOKIE = "abRequestId=c94168d3-aaca-5a38-9f0b-6d24064ec1af; a1=1948c94bbb9o2mwh8o7hruumqbfb3ps27g9tf8as630000233724; webId=8842f4bbadcc13b9bc6a1ac8b894d7a7; gid=yj4YSj4S08WWyj4YSj4DDkY0DjlJ6ExYlWxFjMK776ADi9q8DqUMJi888JqqWJ48DfSYJ8Ji; x-user-id-creator.xiaohongshu.com=673f3111000000001c019235; customerClientId=438249330604083; access-token-creator.xiaohongshu.com=customer.creator.AT-68c517462659162080523141uj8ilf5cp578vxnq; galaxy_creator_session_id=bNvRDPa1EDqlvwpeje8s0pMJf5IFNtt6zN2p; galaxy.creator.beaker.session.id=1737535736629046685042; xsecappid=xhs-pc-web; webBuild=4.56.0; acw_tc=0a4a65a917398866468826439e48731c8201124d131c386bed6f2fbb945f94; websectiga=2a3d3ea002e7d92b5c9743590ebd24010cf3710ff3af8029153751e41a6af4a3; sec_poison_id=b0d6b1bf-2ce1-40d0-8213-33a40e729904; web_session=040069b64b725923c26306d881354bae64372b"
 RETRY_CNT = 10
 HEADELESS = True
-STEALTH_JS_PATH = "./stealth.min.js"
+STEALTH_JS_PATH = "/home/tom/PRJ/xhs/stealth.min.js"
 
 
 def sign(uri, data=None, a1="", web_session=""):
