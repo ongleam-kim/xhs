@@ -18,8 +18,9 @@ pattern = r"https://www\.xiaohongshu\.com/(?:explore|discovery/item)/([a-zA-Z0-9
 
 NOTION_DB_ID = "16d4f3ea5efb81bd97a7c599d2cff8d4"
 NOTION_API_KEY = "secret_rfAdLYHfhpgHc2yEstyPeQT4i97R9UkA78NQh1g7B2C"
-COOKIE = "abRequestId=c94168d3-aaca-5a38-9f0b-6d24064ec1af; a1=1948c94bbb9o2mwh8o7hruumqbfb3ps27g9tf8as630000233724; webId=8842f4bbadcc13b9bc6a1ac8b894d7a7; gid=yj4YSj4S08WWyj4YSj4DDkY0DjlJ6ExYlWxFjMK776ADi9q8DqUMJi888JqqWJ48DfSYJ8Ji; x-user-id-creator.xiaohongshu.com=673f3111000000001c019235; customerClientId=438249330604083; access-token-creator.xiaohongshu.com=customer.creator.AT-68c517462659162080523141uj8ilf5cp578vxnq; galaxy_creator_session_id=bNvRDPa1EDqlvwpeje8s0pMJf5IFNtt6zN2p; galaxy.creator.beaker.session.id=1737535736629046685042; xsecappid=xhs-pc-web; webBuild=4.56.0; acw_tc=0a4a65a917398866468826439e48731c8201124d131c386bed6f2fbb945f94; websectiga=2a3d3ea002e7d92b5c9743590ebd24010cf3710ff3af8029153751e41a6af4a3; sec_poison_id=b0d6b1bf-2ce1-40d0-8213-33a40e729904; web_session=040069b64b725923c26306d881354bae64372b"
-RETRY_CNT = 10
+COOKIE = "abRequestId=c94168d3-aaca-5a38-9f0b-6d24064ec1af; a1=1948c94bbb9o2mwh8o7hruumqbfb3ps27g9tf8as630000233724; webId=8842f4bbadcc13b9bc6a1ac8b894d7a7; gid=yj4YSj4S08WWyj4YSj4DDkY0DjlJ6ExYlWxFjMK776ADi9q8DqUMJi888JqqWJ48DfSYJ8Ji; x-user-id-creator.xiaohongshu.com=673f3111000000001c019235; customerClientId=438249330604083; xsecappid=xhs-pc-web; webBuild=4.61.1; acw_tc=0a4acde517435143102432414e23866b444b17fffa9c346cb067440e8cb686; websectiga=6169c1e84f393779a5f7de7303038f3b47a78e47be716e7bec57ccce17d45f99; sec_poison_id=0fac9d58-1d67-47db-9ce3-3ff9aef7a660; web_session=040069b64b725923c2637ea3de354b1a6c00a9; unread={%22ub%22:%2267ebb49b000000001c0010d0%22%2C%22ue%22:%2267df53e5000000000900de13%22%2C%22uc%22:35}; loadts=1743514406803"
+RETRY_CNT = 3
+SLEEP_TIME= 10
 HEADELESS = True
 STEALTH_JS_PATH = "/home/tom/PRJ/xhs/stealth.min.js"
 
@@ -50,6 +51,37 @@ def sign(uri, data=None, a1="", web_session=""):
             # 这儿有时会出现 window._webmsxyw is not a function 或未知跳转错误，因此加一个失败重试趴
             pass
     raise Exception("重试了这么多次还是无法签名成功，寄寄寄")
+
+
+def getAllNotionDB():
+    url = f"https://api.notion.com/v1/databases/{NOTION_DB_ID}/query"
+    headers = {
+        "Authorization": f"Bearer {NOTION_API_KEY}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28",
+    }
+
+    all_results = []
+    has_more = True
+    start_cursor = None
+
+    while has_more:
+        payload = {}
+        if start_cursor:
+            payload["start_cursor"] = start_cursor
+
+        response = requests.post(url, headers=headers, json=payload)
+        
+        if response.status_code != 200:
+            print(f"Error: {response.status_code}, {response.text}")
+            return None
+
+        data = response.json()
+        all_results.extend(data.get("results", []))
+        has_more = data.get("has_more", False)
+        start_cursor = data.get("next_cursor", None)
+
+    return all_results
 
 
 def getNotionDB():
@@ -145,15 +177,16 @@ def updateNotionRow(page_id, properties):
 
 if __name__ == "__main__":
     xhs_client = XhsClient(COOKIE, sign=sign)
-    notion_data = getNotionDB()
+    notion_data = getAllNotionDB()
+    
     # test_link = "https://www.xiaohongshu.com/explore/67863da8000000000100985c?app_platform=ios&app_version=8.68&share_from_user_hidden=true&xsec_source=app_share&type=normal&xsec_token=CBa8VRAXnWe40lDTj9LUIlrvWYTGC33zvbMt0EaEQ2gH8=&author_share=1&xhsshare=WeixinSession&shareRedId=Nz5IQjk9Ojw7TD05Tj8ySD02TDs8SEg8&apptime=1736851095&share_id=6e1d3e8d9ef64ac09e8242f99b3e3481&wechatWid=120f17e06cf5512f0930c914f3f464fb&wechatOrigin=menu"
 
     # test_page_id = "1994f3ea-5efb-81bb-b287-e524d21888cc"
     # with open("notion_data.json", "r", encoding="utf-8") as json_file:
     #     notion_data = json.loads(json_file.read())
-
+    
     # extract engagement values
-    for item in tqdm(notion_data["results"][:100], desc=f"update notion db .."):
+    for item in tqdm(notion_data, desc=f"update notion db .."):
 
         url = item["properties"]["콘텐츠링크"]["url"]
         page_id = item["id"]
@@ -165,7 +198,7 @@ if __name__ == "__main__":
 
         print(f"* url: {url}\n* note_id: {note_id}\nxsec_token: {xsec_token}\n\n")
         try:
-            sleep_time = random.uniform(5, 10)
+            sleep_time = random.uniform(SLEEP_TIME, SLEEP_TIME*1.5)
             tqdm.write(f"* {sleep_time:.2f}초 대기")
             sleep(sleep_time)
 
@@ -200,4 +233,3 @@ if __name__ == "__main__":
         except Exception as e:
             tqdm.write(f"예외 발생: {str(e)}")
 
-    # save2json(notion_data=not ion_data)
