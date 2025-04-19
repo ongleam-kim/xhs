@@ -18,11 +18,11 @@ pattern = r"https://www\.xiaohongshu\.com/(?:explore|discovery/item)/([a-zA-Z0-9
 
 NOTION_DB_ID = "16d4f3ea5efb81bd97a7c599d2cff8d4"
 NOTION_API_KEY = "secret_rfAdLYHfhpgHc2yEstyPeQT4i97R9UkA78NQh1g7B2C"
-COOKIE = "abRequestId=c94168d3-aaca-5a38-9f0b-6d24064ec1af; a1=1948c94bbb9o2mwh8o7hruumqbfb3ps27g9tf8as630000233724; webId=8842f4bbadcc13b9bc6a1ac8b894d7a7; gid=yj4YSj4S08WWyj4YSj4DDkY0DjlJ6ExYlWxFjMK776ADi9q8DqUMJi888JqqWJ48DfSYJ8Ji; x-user-id-creator.xiaohongshu.com=673f3111000000001c019235; customerClientId=438249330604083; xsecappid=xhs-pc-web; webBuild=4.61.1; acw_tc=0a4acde517435143102432414e23866b444b17fffa9c346cb067440e8cb686; websectiga=6169c1e84f393779a5f7de7303038f3b47a78e47be716e7bec57ccce17d45f99; sec_poison_id=0fac9d58-1d67-47db-9ce3-3ff9aef7a660; web_session=040069b64b725923c2637ea3de354b1a6c00a9; unread={%22ub%22:%2267ebb49b000000001c0010d0%22%2C%22ue%22:%2267df53e5000000000900de13%22%2C%22uc%22:35}; loadts=1743514406803"
+COOKIE = "abRequestId=c94168d3-aaca-5a38-9f0b-6d24064ec1af; a1=1948c94bbb9o2mwh8o7hruumqbfb3ps27g9tf8as630000233724; webId=8842f4bbadcc13b9bc6a1ac8b894d7a7; gid=yj4YSj4S08WWyj4YSj4DDkY0DjlJ6ExYlWxFjMK776ADi9q8DqUMJi888JqqWJ48DfSYJ8Ji; x-user-id-creator.xiaohongshu.com=673f3111000000001c019235; customerClientId=438249330604083; webBuild=4.62.3; acw_tc=0a4a770117449680087397824e6208b5aa88962a0df80fa1980d9c3f0267ae; web_session=040069b64b725923c2633651373a4b891615fd; xsecappid=xhs-pc-web; websectiga=f3d8eaee8a8c63016320d94a1bd00562d516a5417bc43a032a80cbf70f07d5c0; sec_poison_id=da8af53e-174d-4fb1-b8af-65c245d0d873; unread={%22ub%22:%2267f4f3e0000000001d01958b%22%2C%22ue%22:%2267f79040000000000e00675d%22%2C%22uc%22:25}; loadts=1744969234367"
 RETRY_CNT = 3
-SLEEP_TIME= 10
+SLEEP_TIME = 10
 HEADELESS = True
-STEALTH_JS_PATH = "/home/tom/PRJ/xhs/stealth.min.js"
+STEALTH_JS_PATH = "./stealth.min.js"
 
 
 def sign(uri, data=None, a1="", web_session=""):
@@ -53,7 +53,11 @@ def sign(uri, data=None, a1="", web_session=""):
     raise Exception("重试了这么多次还是无法签名成功，寄寄寄")
 
 
-def getAllNotionDB():
+def getAllNotionDB(sort_property="crawled_at", sort_direction="ascending"):
+    """
+    Notion DB의 모든 페이지를 가져옵니다. 지정된 속성으로 정렬합니다.
+    기본값: 'crawled_at' 오름차순 (가장 오래전에 크롤링된 항목 먼저).
+    """
     url = f"https://api.notion.com/v1/databases/{NOTION_DB_ID}/query"
     headers = {
         "Authorization": f"Bearer {NOTION_API_KEY}",
@@ -65,64 +69,42 @@ def getAllNotionDB():
     has_more = True
     start_cursor = None
 
+    # *** 변경: 정렬 기준 속성 이름 반영 ***
+    print(f"Notion 데이터 가져오기 시작 (정렬: {sort_property} {sort_direction})")
+
     while has_more:
-        payload = {}
+        payload = {
+            "sorts": [
+                {
+                    "property": sort_property,  # 함수 인자로 받은 정렬 속성 사용
+                    "direction": sort_direction,
+                }
+            ]
+        }
         if start_cursor:
             payload["start_cursor"] = start_cursor
 
-        response = requests.post(url, headers=headers, json=payload)
-        
-        if response.status_code != 200:
-            print(f"Error: {response.status_code}, {response.text}")
+        try:
+            response = requests.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+
+            data = response.json()
+            results = data.get("results", [])
+            all_results.extend(results)
+            has_more = data.get("has_more", False)
+            start_cursor = data.get("next_cursor", None)
+            print(f"Notion 항목 {len(results)}개 가져옴. 총 {len(all_results)}개. 더 있음: {has_more}")
+            sleep(0.5)
+
+        except requests.exceptions.RequestException as e:
+            print(f"Notion 데이터 가져오기 오류: {e}")
+            if response is not None:
+                print(f"응답 상태 코드: {response.status_code}")
+                print(f"응답 내용: {response.text}")
             return None
 
-        data = response.json()
-        all_results.extend(data.get("results", []))
-        has_more = data.get("has_more", False)
-        start_cursor = data.get("next_cursor", None)
-
+    print(f"Notion 데이터 가져오기 완료. 총 항목 수: {len(all_results)}")
     return all_results
-
-
-def getNotionDB():
-    url = f"https://api.notion.com/v1/databases/{NOTION_DB_ID}/query"
-    headers = {
-        "Authorization": f"Bearer {NOTION_API_KEY}",
-        "Content-Type": "application/json",
-        "Notion-Version": "2022-06-28",
-    }
-    response = requests.post(url, headers=headers)
-
-    if response.status_code == 200:
-        return response.json()  # 노션 데이터베이스의 JSON 응답 반환
-    else:
-        print(f"Error: {response.status_code}, {response.text}")
-        return None
-
-
-def crawl_engagement(url: str) -> Optional[int]:
-    """
-    URL에서 인게이지먼트 데이터를 크롤링하는 함수
-    나중에 구현 예정
-    """
-    pass
-
-
-def update_notion_page(page_id: str, engagement: int):
-    """
-    노션 페이지의 인게이지먼트 값을 업데이트하는 함수
-    """
-    url = f"https://api.notion.com/v1/pages/{page_id}"
-    headers = {
-        "Authorization": f"Bearer {NOTION_API_KEY}",
-        "Content-Type": "application/json",
-        "Notion-Version": "2022-06-28",
-    }
-
-    data = {"properties": {"인게이지먼트": {"number": engagement}}}
-
-    response = requests.patch(url, headers=headers, json=data)
-    return response.status_code == 200
 
 
 def save2json(notion_data):
@@ -178,13 +160,13 @@ def updateNotionRow(page_id, properties):
 if __name__ == "__main__":
     xhs_client = XhsClient(COOKIE, sign=sign)
     notion_data = getAllNotionDB()
-    
+
     # test_link = "https://www.xiaohongshu.com/explore/67863da8000000000100985c?app_platform=ios&app_version=8.68&share_from_user_hidden=true&xsec_source=app_share&type=normal&xsec_token=CBa8VRAXnWe40lDTj9LUIlrvWYTGC33zvbMt0EaEQ2gH8=&author_share=1&xhsshare=WeixinSession&shareRedId=Nz5IQjk9Ojw7TD05Tj8ySD02TDs8SEg8&apptime=1736851095&share_id=6e1d3e8d9ef64ac09e8242f99b3e3481&wechatWid=120f17e06cf5512f0930c914f3f464fb&wechatOrigin=menu"
 
     # test_page_id = "1994f3ea-5efb-81bb-b287-e524d21888cc"
     # with open("notion_data.json", "r", encoding="utf-8") as json_file:
     #     notion_data = json.loads(json_file.read())
-    
+
     # extract engagement values
     for item in tqdm(notion_data, desc=f"update notion db .."):
 
@@ -198,7 +180,7 @@ if __name__ == "__main__":
 
         print(f"* url: {url}\n* note_id: {note_id}\nxsec_token: {xsec_token}\n\n")
         try:
-            sleep_time = random.uniform(SLEEP_TIME, SLEEP_TIME*1.5)
+            sleep_time = random.uniform(SLEEP_TIME, SLEEP_TIME * 1.5)
             tqdm.write(f"* {sleep_time:.2f}초 대기")
             sleep(sleep_time)
 
@@ -213,6 +195,7 @@ if __name__ == "__main__":
                             "collect": {"number": int(note["interact_info"]["collected_count"])},
                             "share": {"number": int(note["interact_info"]["share_count"])},
                             "comment": {"number": int(note["interact_info"]["comment_count"])},
+                            "crawled_at": {"date": {"start": datetime.datetime.now().isoformat()}},
                         },
                     )
 
@@ -232,4 +215,3 @@ if __name__ == "__main__":
                         tqdm.write("재시도 중...")
         except Exception as e:
             tqdm.write(f"예외 발생: {str(e)}")
-
