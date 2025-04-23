@@ -16,13 +16,15 @@ import re
 
 pattern = r"https://www\.xiaohongshu\.com/(?:explore|discovery/item)/([a-zA-Z0-9]+)\?.*?xsec_token=([^&=]+)"
 
-NOTION_DB_ID = "16d4f3ea5efb81bd97a7c599d2cff8d4"
-NOTION_API_KEY = "secret_rfAdLYHfhpgHc2yEstyPeQT4i97R9UkA78NQh1g7B2C"
-COOKIE = "abRequestId=c94168d3-aaca-5a38-9f0b-6d24064ec1af; a1=1948c94bbb9o2mwh8o7hruumqbfb3ps27g9tf8as630000233724; webId=8842f4bbadcc13b9bc6a1ac8b894d7a7; gid=yj4YSj4S08WWyj4YSj4DDkY0DjlJ6ExYlWxFjMK776ADi9q8DqUMJi888JqqWJ48DfSYJ8Ji; x-user-id-creator.xiaohongshu.com=673f3111000000001c019235; customerClientId=438249330604083; webBuild=4.62.3; acw_tc=0a4a770117449680087397824e6208b5aa88962a0df80fa1980d9c3f0267ae; web_session=040069b64b725923c2633651373a4b891615fd; xsecappid=xhs-pc-web; websectiga=f3d8eaee8a8c63016320d94a1bd00562d516a5417bc43a032a80cbf70f07d5c0; sec_poison_id=da8af53e-174d-4fb1-b8af-65c245d0d873; unread={%22ub%22:%2267f4f3e0000000001d01958b%22%2C%22ue%22:%2267f79040000000000e00675d%22%2C%22uc%22:25}; loadts=1744969234367"
+NOTION_DB_ID = "1dc0ab7fb18f81318e52ea606b595cf9"
+NOTION_API_KEY = "ntn_b2877272463591V9uUyRCoJYCkQy9bwnBObHoURYyg65Qo"
+COOKIE = "abRequestId=c94168d3-aaca-5a38-9f0b-6d24064ec1af; a1=1948c94bbb9o2mwh8o7hruumqbfb3ps27g9tf8as630000233724; webId=8842f4bbadcc13b9bc6a1ac8b894d7a7; gid=yj4YSj4S08WWyj4YSj4DDkY0DjlJ6ExYlWxFjMK776ADi9q8DqUMJi888JqqWJ48DfSYJ8Ji; x-user-id-creator.xiaohongshu.com=673f3111000000001c019235; customerClientId=438249330604083; xsecappid=xhs-pc-web; webBuild=4.62.3; acw_tc=0a4a54f817453890744986561e555dd4ce2aad8868e916ac337e04b6757cb5; web_session=040069b64b725923c2633ace3d3a4b826d2f2f; websectiga=a9bdcaed0af874f3a1431e94fbea410e8f738542fbb02df1e8e30c29ef3d91ac; sec_poison_id=fadf270d-f13f-4ace-ad7f-46bafc784c4c; loadts=1745389411848"
 RETRY_CNT = 3
 SLEEP_TIME = 10
 HEADELESS = True
 STEALTH_JS_PATH = "./stealth.min.js"
+TARGET_CUSTOMMERS = ["산산치킨", "은화계"]
+NOTION_CUSTOMER_PROPERTY = "고객"
 
 
 def sign(uri, data=None, a1="", web_session=""):
@@ -104,6 +106,17 @@ def getAllNotionDB(sort_property="crawled_at", sort_direction="ascending"):
             return None
 
     print(f"Notion 데이터 가져오기 완료. 총 항목 수: {len(all_results)}")
+
+    # TARGET CUSTOMER만 필터링
+    filtered_results = []
+    for item in all_results:
+        properties = item.get("properties", {})
+        target_customer = properties.get(NOTION_CUSTOMER_PROPERTY, {}).get("select", {}).get("name")
+        if target_customer in TARGET_CUSTOMMERS:
+            filtered_results.append(item)
+
+    print(f"TARGET CUSTOMER 필터링 완료. 총 {len(filtered_results)}개 항목")
+    all_results = filtered_results
     return all_results
 
 
